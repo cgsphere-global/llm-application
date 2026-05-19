@@ -6,6 +6,10 @@ colorTo: indigo
 sdk: gradio
 sdk_version: 4.44.1
 app_file: app.py
+# HF Spaces now defaults to Python 3.13, where stdlib `audioop` was removed
+# (PEP 594) and pydub->gradio fails to import. Pin 3.11 to match the tested
+# local environment (CLAUDE.md §2).
+python_version: "3.11"
 pinned: false
 ---
 
