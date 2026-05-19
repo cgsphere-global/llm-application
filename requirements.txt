@@ -1,0 +1,30 @@
+# Pinned per CLAUDE.md §2: HF Spaces rebuilds on every push, so a floating
+# version would silently break the live app. Verify each pin resolves on
+# Python 3.11 at install time before relying on it.
+
+# --- Core: LLM API, schema validation, config ---
+openai==1.59.6           # chat + embeddings; native structured outputs (Phase 3/5)
+pydantic==2.10.4         # v2 — the output contract (§6) and the Settings model
+python-dotenv==1.0.1     # .env loading for the Settings model (§2)
+
+# --- RAG vector store ---
+chromadb==0.5.23         # persistent local vector DB (§2)
+
+# --- UI ---
+gradio==4.44.1           # HF Spaces Gradio SDK target (§2 — must stay 4.x)
+# Gradio 4.44.1 calls Starlette's pre-1.0 TemplateResponse signature; the
+# transitive fastapi/starlette floated to 0.136/1.0 and broke every page
+# render. Pin the last compatible pair (fastapi 0.115.x -> starlette 0.41.x).
+fastapi==0.115.6
+starlette==0.41.3
+
+# --- Data prep & eval (scripts/, not app runtime) ---
+datasets==3.2.0          # pull Bitext from HF (Phase 4)
+pandas==2.2.3            # eval_set.csv handling + metrics (Phase 4/8)
+
+# --- Tooling ---
+pytest==8.3.4            # tests (Phase 2/9)
+ruff==0.8.4              # lint + format (Phase 9)
+
+# --- Deployment ---
+huggingface_hub==0.27.0  # push to HF Space via GitHub Actions (Phase 11)

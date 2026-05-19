@@ -1,0 +1,30 @@
+# Quality gate on every PR: lint, format check, and the test suite. Tests
+# mock the LLM and need no real key (tests/conftest.py sets a dummy), so this
+# never spends API credit or hits the network (CLAUDE.md Phase 9).
+name: Tests
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Lint
+        run: ruff check .
+
+      - name: Format check
+        run: ruff format --check .
+
+      - name: Tests
+        run: pytest -q

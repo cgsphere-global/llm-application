@@ -1,0 +1,65 @@
+{
+  "timestamp": "2026-05-19T12:36:27.052066+00:00",
+  "label": "round2b_sanity",
+  "subset": 200,
+  "notes": [],
+  "metrics": {
+    "total": 200,
+    "accuracy": 0.54,
+    "per_category": {
+      "Billing": {
+        "precision": 0.7391,
+        "recall": 0.5667,
+        "f1": 0.6415,
+        "support": 30
+      },
+      "Technical": {
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.6667,
+        "support": 1
+      },
+      "Account": {
+        "precision": 0.9,
+        "recall": 0.4655,
+        "f1": 0.6136,
+        "support": 58
+      },
+      "Refund": {
+        "precision": 1.0,
+        "recall": 0.3043,
+        "f1": 0.4667,
+        "support": 23
+      },
+      "Shipping": {
+        "precision": 1.0,
+        "recall": 0.4483,
+        "f1": 0.619,
+        "support": 58
+      },
+      "Other": {
+        "precision": 0.2679,
+        "recall": 1.0,
+        "f1": 0.4225,
+        "support": 30
+      }
+    },
+    "macro_f1": 0.5717,
+    "latency_ms_mean": 2605.0,
+    "latency_ms_p95": 3612.0,
+    "cost_usd_total": 0.068217,
+    "cost_usd_per_ticket": 0.000341,
+    "failure_rate": 0.0,
+    "rows_with_transient_retry": 0,
+    "rows_with_schema_refrompt": 0,
+    "wall_clock_s": 67.5
+  },
+  "targets": {
+    "checks": {
+      "accuracy>=0.80": false,
+      "p95_latency<5s": true,
+      "cost/ticket<$0.005": true
+    },
+    "all_passed": false
+  }
+}

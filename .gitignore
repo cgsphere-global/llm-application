@@ -1,0 +1,22 @@
+# Secrets — never commit (§9)
+.env
+
+# Regenerated data artifacts — never commit (§9).
+# Keep the directories tracked, ignore their contents.
+data/raw/*
+!data/raw/.gitkeep
+data/chroma_db/*
+!data/chroma_db/.gitkeep
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+
+# Tooling caches
+.pytest_cache/
+.ruff_cache/
+
+# macOS
+.DS_Store
