@@ -1,7 +1,13 @@
-# Mirrors main -> the Hugging Face Space git repo on every push. HF rebuilds
-# the Space from the pushed content (README front-matter selects the Gradio
-# SDK + app.py). Force-push because the Space repo is a one-way mirror of main.
+# Publishes the repo to the Hugging Face Space on every push to main, via
+# huggingface_hub (CLAUDE.md §8 Phase 11.3). Only HF_TOKEN is a secret; the
+# Space id is public (it's in the URL), so it is hardcoded — this removes the
+# empty-secret failure mode entirely. HF rebuilds the Space from the upload
+# (README front-matter selects the Gradio SDK + app.py).
 name: Deploy to Hugging Face Space
+
+# If the org/Space ever changes, edit this one line.
+env:
+  HF_SPACE_ID: CG-Sphere/llm-application
 
 on:
   push:
@@ -13,20 +19,44 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-        with:
-          # Full history so the force-push to the Space is a normal git push,
-          # not a shallow-clone rejection.
-          fetch-depth: 0
-          lfs: true
 
-      - name: Push to Hugging Face Space
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install "huggingface_hub==0.27.0"
+
+      - name: Upload to Hugging Face Space
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          HF_USERNAME: ${{ secrets.HF_USERNAME }}
-          HF_SPACE: ${{ secrets.HF_SPACE }}
         run: |
-          git config user.email "actions@github.com"
-          git config user.name "GitHub Actions"
-          git push --force \
-            "https://${HF_USERNAME}:${HF_TOKEN}@huggingface.co/spaces/${HF_USERNAME}/${HF_SPACE}.git" \
-            HEAD:main
+          if [ -z "$HF_TOKEN" ]; then
+            echo "::error::HF_TOKEN is empty. Add it as a repository Actions "\
+                 "secret (Settings -> Secrets and variables -> Actions), "\
+                 "write scope, with access to the $HF_SPACE_ID org Space."
+            exit 1
+          fi
+          python - <<'PY'
+          import os
+          from huggingface_hub import HfApi
+
+          api = HfApi(token=os.environ["HF_TOKEN"])
+          api.upload_folder(
+              repo_id=os.environ["HF_SPACE_ID"],
+              repo_type="space",
+              folder_path=".",
+              commit_message="Deploy from GitHub Actions",
+              # Never ship local-only / regenerable / junk into the Space.
+              ignore_patterns=[
+                  ".git/*",
+                  ".github/*",
+                  ".venv/*",
+                  "data/chroma_db/*",
+                  "data/raw/*",
+                  "**/__pycache__/*",
+                  ".pytest_cache/*",
+                  ".ruff_cache/*",
+              ],
+          )
+          print(f"Uploaded to https://huggingface.co/spaces/{os.environ['HF_SPACE_ID']}")
+          PY
