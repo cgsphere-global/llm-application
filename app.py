@@ -5,10 +5,13 @@ result. No classification logic lives here (CLAUDE.md §4.2); the only logic is
 the §10 per-session rate limit, which §10 explicitly mandates live in app.py.
 """
 
+import logging
+
 import gradio as gr
 
 from src.classifier import ClassifiedResult, ClassifierError, classify_ticket_detailed
 from src.guardrails import GuardrailError
+from src.rag import RAGError, sync_sop_collection
 
 _EXAMPLES = [
     "I was charged twice for my Pro plan this month, order #99812. Refund the extra $20.",
@@ -86,6 +89,14 @@ with gr.Blocks(title="Ticket Classifier") as demo:
     btn.click(_classify, inputs=[inp, used], outputs=[card, raw, metrics, used])
 
 if __name__ == "__main__":
+    # A fresh Hugging Face Space ships no chroma_db/ (gitignored), so build
+    # the SOP store once on boot. Idempotent locally (no-op if populated).
+    # Best-effort: on failure the classifier degrades to no-SOP rather than
+    # blocking the app. Kept in __main__ so importing app.py (tests) is inert.
+    try:
+        sync_sop_collection()
+    except RAGError as exc:
+        logging.getLogger("ticket_classifier").warning(f"SOP ingest skipped: {exc}")
     # Bind localhost for local runs; Hugging Face Spaces overrides the host
     # via the GRADIO_SERVER_NAME env var it sets automatically.
     demo.launch(server_port=7860)
